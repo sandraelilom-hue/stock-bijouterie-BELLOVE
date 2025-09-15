@@ -1,0 +1,44 @@
+[
+  {
+    "sku": "Collar cuero",
+    "tipo": "Collar",
+    "descripcion": "Collar corto de cuero con dije",
+    "cantidad": 2,
+    "precio_ars": 2000
+  },
+  {
+    "sku": "Collar glow",
+    "tipo": "Collar",
+    "descripcion": "Collar corto trenzado brillante con dije",
+    "cantidad": 2,
+    "precio_ars": 1800
+  },
+  {
+    "sku": "Collar basic",
+    "tipo": "Collar",
+    "descripcion": "Collar corto de gamuza con dije",
+    "cantidad": 6,
+    "precio_ars": 1800
+  },
+  {
+    "sku": "Collar aura",
+    "tipo": "Collar",
+    "descripcion": "Collar de gamuza y cadena con un dije",
+    "cantidad": 4,
+    "precio_ars": 3500
+  },
+  {
+    "sku": "Collar style",
+    "tipo": "Collar",
+    "descripcion": "collar de gamuza largo con dije",
+    "cantidad": 3,
+    "precio_ars": 5500
+  },
+  {
+    "sku": "collar loop",
+    "tipo": "collar",
+    "descripcion": "collar largo de gamuza con pelotitas",
+    "cantidad": 3,
+    "precio_ars": 4500
+  }
+]
