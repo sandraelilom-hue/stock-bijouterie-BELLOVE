@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Stock Bijouterie</title>
+  <style>
+    body{font-family:Arial, sans-serif;background:#f9fafb;margin:0;padding:20px;color:#111}
+    h1{margin-bottom:8px}
+    .lead{color:#555;margin-top:0}
+    table{width:100%;border-collapse:collapse;margin-top:20px;background:#fff}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left;font-size:14px}
+    th{background:#2563eb;color:#fff}
+    tr:nth-child(even){background:#f3f4f6}
+    .form{margin-top:30px;background:#fff;padding:16px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,0.08)}
+    label{display:block;margin-top:10px;font-weight:bold}
+    input{width:100%;padding:8px;margin-top:4px;border:1px solid #ccc;border-radius:4px}
+    button{margin-top:12px;padding:8px 12px;background:#2563eb;color:white;border:none;border-radius:6px;cursor:pointer}
+    button:hover{background:#1d4ed8}
+    .btn-small{padding:4px 8px;font-size:12px;margin:0 2px;border-radius:4px}
+    .edit{background:#f59e0b}
+    .edit:hover{background:#d97706}
+    .delete{background:#dc2626}
+    .delete:hover{background:#b91c1c}
+    .download{background:#10b981}
+    .download:hover{background:#059669}
+    .upload{background:#9333ea}
+    .upload:hover{background:#7e22ce}
+  </style>
+</head>
+<body>
+  <h1>Stock Bijouterie</h1>
+  <p class="lead">Agregá, editá, eliminá accesorios y guardá tu stock automáticamente.</p>
+
+  <button class="download" onclick="descargarJSON()">📥 Descargar JSON</button>
+  <button class="upload" onclick="document.getElementById('upload').click()">📤 Cargar JSON</button>
+  <input type="file" id="upload" accept=".json" style="display:none" onchange="cargarJSON(event)">
+
+  <table id="stock-table">
+    <thead>
+      <tr>
+        <th>SKU</th>
+        <th>Tipo</th>
+        <th>Descripción</th>
+        <th>Cantidad</th>
+        <th>Precio (ARS)</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="form">
+    <h2 id="form-title">Agregar accesorio</h2>
+    <label for="sku">SKU:</label>
+    <input type="text" id="sku">
+
+    <label for="tipo">Tipo:</label>
+    <input type="text" id="tipo">
+
+    <label for="descripcion">Descripción:</label>
+    <input type="text" id="descripcion">
+
+    <label for="cantidad">Cantidad:</label>
+    <input type="number" id="cantidad" value="0">
+
+    <label for="precio">Precio (ARS):</label>
+    <input type="number" id="precio" value="0">
+
+    <button id="submit-btn" onclick="agregarAccesorio()">Agregar al stock</button>
+  </div>
+
+  <script>
+    let data = [];
+
+    if(localStorage.getItem("stockBijouterie")){
+      try{
+        data = JSON.parse(localStorage.getItem("stockBijouterie"));
+      }catch(e){
+        data = [];
+      }
+    } else {
+      data = [
+        {"sku":"Collar cuero","tipo":"Collar","descripcion":"Collar corto de cuero con dije","cantidad":2,"precio_ars":2000},
+        {"sku":"Collar glow","tipo":"Collar","descripcion":"Collar corto trenzado brillante con dije","cantidad":2,"precio_ars":1800},
+        {"sku":"Collar basic","tipo":"Collar","descripcion":"Collar corto de gamuza con dije","cantidad":6,"precio_ars":1800}
+      ];
+      guardarLocal();
+    }
+
+    let editIndex = null;
+    const tbody = document.querySelector('#stock-table tbody');
+
+    function renderTable(){
+      tbody.innerHTML = "";
+      data.forEach((item, index) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${item.sku}</td>
+          <td>${item.tipo}</td>
+          <td>${item.descripcion}</td>
+          <td>${item.cantidad}</td>
+          <td>$ ${item.precio_ars.toLocaleString("es-AR")}</td>
+          <td>
+            <button class="btn-small edit" onclick="editarAccesorio(${index})">Editar</button>
+            <button class="btn-small delete" onclick="eliminarAccesorio(${index})">Eliminar</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function agregarAccesorio(){
+      const sku = document.getElementById("sku").value.trim();
+      const tipo = document.getElementById("tipo").value.trim();
+      const descripcion = document.getElementById("descripcion").value.trim();
+      const cantidad = parseInt(document.getElementById("cantidad").value);
+      const precio = parseInt(document.getElementById("precio").value);
+
+      if(!sku || !tipo || !descripcion){alert("Por favor completa todos los campos");return;}
+
+      if(editIndex === null){
+        data.push({sku, tipo, descripcion, cantidad, precio_ars:precio});
+      } else {
+        data[editIndex] = {sku, tipo, descripcion, cantidad, precio_ars:precio};
+        editIndex = null;
+        document.getElementById("form-title").innerText = "Agregar accesorio";
+        document.getElementById("submit-btn").innerText = "Agregar al stock";
+      }
+
+      guardarLocal();
+      renderTable();
+      limpiarFormulario();
+    }
+
+    function editarAccesorio(index){
+      const item = data[index];
+      document.getElementById("sku").value = item.sku;
+      document.getElementById("tipo").value = item.tipo;
+      document.getElementById("descripcion").value = item.descripcion;
+      document.getElementById("cantidad").value = item.cantidad;
+      document.getElementById("precio").value = item.precio_ars;
+
+      editIndex = index;
+      document.getElementById("form-title").innerText = "Editar accesorio";
+      document.getElementById("submit-btn").innerText = "Guardar cambios";
+    }
+
+    function eliminarAccesorio(index){
+      if(confirm("¿Seguro que quieres eliminar este accesorio?")){
+        data.splice(index, 1);
+        guardarLocal();
+        renderTable();
+      }
+    }
+
+    function limpiarFormulario(){
+      document.getElementById("sku").value = "";
+      document.getElementById("tipo").value = "";
+      document.getElementById("descripcion").value = "";
+      document.getElementById("cantidad").value = 0;
+      document.getElementById("precio").value = 0;
+    }
+
+    function descargarJSON(){
+      const blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "stock_bijouterie.json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function cargarJSON(event){
+      const file = event.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        try{
+          data = JSON.parse(e.target.result);
+          guardarLocal();
+          renderTable();
+        }catch(err){
+          alert("Error al leer el archivo JSON");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function guardarLocal(){
+      localStorage.setItem("stockBijouterie", JSON.stringify(data));
+    }
+
+    renderTable();
+  </script>
+</body>
+</html>
